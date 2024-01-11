@@ -1,0 +1,62 @@
+http {
+        include mime.types;
+        upstream backendserver {
+                server google.com;
+                server facebook.com;
+                server gmail.com;
+                server slack.com;
+        }
+
+        server {
+                listen 8080;
+                root /data;
+
+                # Redirect to /fruits page upon /crops
+                location /crops {
+                 return 307 /fruits;
+                }
+
+                # Regex expression
+                location ~*/count/[0-9] {
+                root /data;
+                try_files /index.html =404;
+                }
+
+                # point to index.html file in /fruits
+                location /fruits {
+                root /data;
+                }
+
+                # point to index.html file in /vegan folder
+                location /vegan {
+                root /data;
+                }
+
+                # point to /data/vegan directory
+                location /pmacademy {
+                alias /data/vegan;
+                }
+
+                # point to Vegetables directory vegies.html if exists or 404
+                location /vegetables {
+                root /data;
+                try_files /vegetables/vegies.html /index.html =404;
+                }
+
+                # redirect to another folders index.html but don't redirect the folder
+                # value in \w+ will go to $1
+                rewrite ^/number/(\w+) /count/$1;
+
+                # Load balancing configure the upsteam backend
+
+                location /backend {
+                proxy_pass http://backendserver/backend;
+                }
+
+                location /backgoogle {
+                rewrite ^/backgoogle https://www.google.com/ redirect; 
+                }
+}
+}
+
+events {}
